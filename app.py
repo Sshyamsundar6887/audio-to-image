@@ -107,9 +107,9 @@ def dall_e_api(dalle_prompt, style="vivid"):
         # Updated for OpenAI v1.0+
         dalle_response = client.images.generate(
             prompt=dalle_prompt,
-            model="dall-e-2",
+            model="dall-e-3",
             size="1024x1024",
-            quality="standard",
+            quality="hd",
             style=style,
             n=1
         )
