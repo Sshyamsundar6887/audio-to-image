@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Image Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/robot-animations.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .image-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 4px;
+        }
+        
+        .image-container img[src*="placeholder"] {
+            padding: 20px;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="robot-container">
+                <div class="robot-head">
+                    <div class="robot-antenna"></div>
+                    <div class="robot-eye left"></div>
+                    <div class="robot-eye right"></div>
+                    <div class="robot-mouth"></div>
+                </div>
+                <div class="robot-body"></div>
+                <div class="robot-arm left"></div>
+                <div class="robot-arm right"></div>
+            </div>
+            <h1>Audio 2 Art</h1>
+            <p>Create images using your voice or text descriptions</p>
+            <div class="theme-toggle">
+                <button id="theme-toggle-btn" aria-label="Toggle dark mode">
+                    <i class="fas fa-moon"></i>
+                    <span>Dark Mode</span>
+                </button>
+            </div>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="voice">
+                <i class="fas fa-microphone"></i> Voice Input
+            </button>
+            <button class="tab-btn" data-tab="text">
+                <i class="fas fa-keyboard"></i> Text Input
+            </button>
+            <button class="tab-btn" data-tab="history">
+                <i class="fas fa-history"></i> History
+            </button>
+        </div>
+
+        <div class="tab-content active" id="voice-tab">
+            <div class="input-section">
+                <div class="input-column">
+                    <div class="audio-recorder card">
+                        <button id="record-btn" class="record-btn">
+                            <i class="fas fa-microphone"></i>
+                            <span>Start Recording</span>
+                        </button>
+                        <div id="recording-status" class="recording-status"></div>
+                        <div id="audio-player-container" class="audio-player-container hidden">
+                            <audio id="audio-player" controls></audio>
+                        </div>
+                    </div>
+                    <div class="style-selector card">
+                        <label for="voice-style">Image Style:</label>
+                        <select id="voice-style">
+                            <option value="vivid">Vivid</option>
+                            <option value="natural">Natural</option>
+                        </select>
+                    </div>
+                    <button id="voice-generate-btn" class="generate-btn" disabled>
+                        <i class="fas fa-magic"></i> Generate Image
+                    </button>
+                </div>
+                <div class="output-column">
+                    <div class="output-field card">
+                        <label>Your Transcribed Description:</label>
+                        <textarea id="transcription-output" readonly></textarea>
+                        <div class="robot-typing">
+                            <i class="fas fa-robot robot-typing-icon"></i>
+                            <div class="robot-typing-text">Processing<span class="robot-typing-cursor"></span></div>
+                        </div>
+                    </div>
+                    <div class="output-field card">
+                        <label>DALL-E Prompt:</label>
+                        <textarea id="dalle-prompt-output" readonly></textarea>
+                    </div>
+                    <div class="image-output card">
+                        <div id="voice-image-container" class="image-container">
+                            <div class="placeholder-text">Generated image will appear here</div>
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <button id="voice-download-btn" class="action-btn" disabled>
+                            <i class="fas fa-download"></i> Download
+                        </button>
+                        <button id="voice-share-btn" class="action-btn" disabled>
+                            <i class="fab fa-whatsapp"></i> Share
+                        </button>
+                    </div>
+                    <div id="voice-status-message" class="status-message"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="text-tab">
+            <div class="input-section">
+                <div class="input-column">
+                    <div class="text-input-container card">
+                        <label for="text-input">Enter your description:</label>
+                        <textarea id="text-input" placeholder="Describe the image you want to create..."></textarea>
+                    </div>
+                    <div class="style-selector card">
+                        <label for="text-style">Image Style:</label>
+                        <select id="text-style">
+                            <option value="vivid">Vivid</option>
+                            <option value="natural">Natural</option>
+                        </select>
+                    </div>
+                    <button id="text-generate-btn" class="generate-btn">
+                        <i class="fas fa-magic"></i> Generate Image
+                    </button>
+                </div>
+                <div class="output-column">
+                    <div class="output-field card">
+                        <label>DALL-E Prompt:</label>
+                        <textarea id="text-dalle-prompt" readonly></textarea>
+                        <div class="robot-typing">
+                            <i class="fas fa-robot robot-typing-icon"></i>
+                            <div class="robot-typing-text">Processing<span class="robot-typing-cursor"></span></div>
+                        </div>
+                    </div>
+                    <div class="image-output card">
+                        <div id="text-image-container" class="image-container">
+                            <div class="placeholder-text">Generated image will appear here</div>
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <button id="text-download-btn" class="action-btn" disabled>
+                            <i class="fas fa-download"></i> Download
+                        </button>
+                        <button id="text-share-btn" class="action-btn" disabled>
+                            <i class="fab fa-whatsapp"></i> Share
+                        </button>
+                    </div>
+                    <div id="text-status-message" class="status-message"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="history-tab">
+            <div class="history-container card">
+                <div class="history-header">
+                    <h2>Generation History</h2>
+                    <button id="refresh-history-btn" class="refresh-btn">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+                <div id="history-content" class="history-content">
+                    <div class="robot-loading">
+                        <div class="robot-processing">
+                            <div class="robot-processing-circle"></div>
+                            <div class="robot-processing-circle"></div>
+                            <div class="robot-processing-circle"></div>
+                        </div>
+                        <div class="robot-loading-text">Loading history...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Powered by OpenAI's DALL-E and Whisper APIs</p>
+        </footer>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2 id="modal-title">Share to WhatsApp</h2>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <div class="floating-robot" id="floating-robot">
+        <i class="fas fa-robot"></i>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
+

@@ -1,0 +1,7 @@
+venv
+
+config.cfg
+
+.env
+
+static\uploads\*
